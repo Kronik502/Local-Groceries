@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "769143430529",
+    "project_id": "localgroc-8aba2",
+    "storage_bucket": "localgroc-8aba2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:769143430529:android:5da98738bfdd53cb8f5c80",
+        "android_client_info": {
+          "package_name": "com.example.localgroceries"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAj66ax7aGuwur9WzWXNHVnIAyzovjdgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
