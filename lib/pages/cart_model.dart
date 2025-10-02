@@ -1,27 +1,36 @@
-class CartModel {
+import 'package:flutter/foundation.dart';
+
+class CartModel extends ChangeNotifier {
   static final CartModel _instance = CartModel._internal();
 
-  factory CartModel() {
-    return _instance;
-  }
+  factory CartModel() => _instance;
 
   CartModel._internal();
 
-  // Map of product name to quantity
-  final Map<String, int> items = {};
+  final Map<String, int> _items = {};
 
-  void addItem(String product, int quantity) {
-    if (quantity <= 0) return;
-    items.update(product, (existingQty) => existingQty + quantity, ifAbsent: () => quantity);
+  void addItem(String name, int quantity) {
+    if (_items.containsKey(name)) {
+      _items[name] = _items[name]! + quantity;
+    } else {
+      _items[name] = quantity;
+    }
+    notifyListeners();
   }
 
-  void removeItem(String product) {
-    items.remove(product);
+  int get totalItemsCount {
+    return _items.values.fold(0, (sum, qty) => sum + qty);
   }
 
-  void clear() {
-    items.clear();
+  Map<String, int> get items => Map.unmodifiable(_items);
+
+  void clearCart() {
+    _items.clear();
+    notifyListeners();
   }
 
-  int get totalItemsCount => items.values.fold(0, (sum, qty) => sum + qty);
+  void removeItem(String name) {
+    _items.remove(name);
+    notifyListeners();
+  }
 }

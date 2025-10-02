@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';  // <-- Import provider
+import '../styles/colors.dart';
 import 'cart_model.dart';
 import 'cart_page.dart';
 
@@ -9,12 +11,12 @@ class ShoppingPage extends StatefulWidget {
   State<ShoppingPage> createState() => _ShoppingPageState();
 }
 
-class _ShoppingPageState extends State<ShoppingPage> {
+class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMixin {
   final Map<String, int> _quantities = {
-    'Bread': 0,
-    'Milk': 0,
-    'Coke': 0,
-    'Biscuits': 0,
+    'Bread': 1,
+    'Milk': 1,
+    'Coke': 1,
+    'Biscuits': 1,
   };
 
   final Map<String, String> _descriptions = {
@@ -31,6 +33,24 @@ class _ShoppingPageState extends State<ShoppingPage> {
     'Biscuits': 'biscuits.png',
   };
 
+  final List<String> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _animateItems();
+  }
+
+  // Animate items in with delay
+  void _animateItems() async {
+    for (var item in _quantities.keys) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      setState(() {
+        _items.add(item);
+      });
+    }
+  }
+
   void _increase(String item) {
     setState(() {
       _quantities[item] = _quantities[item]! + 1;
@@ -39,7 +59,7 @@ class _ShoppingPageState extends State<ShoppingPage> {
 
   void _decrease(String item) {
     setState(() {
-      if (_quantities[item]! > 0) {
+      if (_quantities[item]! > 1) {
         _quantities[item] = _quantities[item]! - 1;
       }
     });
@@ -48,16 +68,20 @@ class _ShoppingPageState extends State<ShoppingPage> {
   void _addToCart(String item) {
     final qty = _quantities[item]!;
     if (qty > 0) {
-      CartModel().addItem(item, qty);
+      // Use Provider to get CartModel instance and add item
+      final cart = Provider.of<CartModel>(context, listen: false);
+      cart.addItem(item, qty);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('$qty x $item added to cart!'),
           duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
+
       setState(() {
-        _quantities[item] = 0; // reset input after adding to cart
+        _quantities[item] = 1;
       });
     }
   }
@@ -65,135 +89,132 @@ class _ShoppingPageState extends State<ShoppingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.brown[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('🛒 Shop Groceries'),
-        backgroundColor: Colors.brown,
+        backgroundColor: AppColors.primary,
         elevation: 0,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CartPage()),
-                  ).then((_) => setState(() {})); // refresh on return
-                },
-              ),
-              if (CartModel().totalItemsCount > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                    child: Text(
-                      '${CartModel().totalItemsCount}',
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
+        // Optional: You can add a cart icon with badge here if you want
       ),
-      body: ListView(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        children: _quantities.keys.map((item) {
-          return Card(
-            elevation: 4,
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+        itemCount: _items.length,
+        itemBuilder: (context, index) {
+          final item = _items[index];
+          return AnimatedOpacity(
+            duration: const Duration(milliseconds: 500),
+            opacity: 1.0,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.1),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: AnimationController(
+                    duration: const Duration(milliseconds: 500),
+                    vsync: this,
+                  )..forward(),
+                  curve: Curves.easeOut,
+                ),
+              ),
+              child: _buildProductCard(item),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(
-                      'lib/images/${_imageFiles[item]}',
-                      height: 160,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductCard(String item) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'lib/images/${_imageFiles[item]}',
+                height: 160,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Product Title
+            Text(
+              item,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            // Product Description
+            Text(
+              _descriptions[item]!,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Quantity + Add Button
+            Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.inputBackground,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.primary),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    item,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _descriptions[item]!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+                  child: Row(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.brown[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.brown),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove),
-                              onPressed: () => _decrease(item),
-                            ),
-                            Text(
-                              '${_quantities[item]}',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.add),
-                              onPressed: () => _increase(item),
-                            ),
-                          ],
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.remove),
+                        onPressed: () => _decrease(item),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _addToCart(item),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.brown,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Add to Cart',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ),
+                      Text(
+                        '${_quantities[item]}',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () => _increase(item),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _addToCart(item),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add to Cart',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          );
-        }).toList(),
+          ],
+        ),
       ),
     );
   }

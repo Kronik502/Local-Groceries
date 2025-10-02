@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import 'cart_model.dart';
+import 'checkout_page.dart';
 
-class CartPage extends StatefulWidget {
-  const CartPage({super.key});
-
-  @override
-  State<CartPage> createState() => _CartPageState();
-}
-
-class _CartPageState extends State<CartPage> {
-  final CartModel cart = CartModel();
+class CartPage extends StatelessWidget {
+  CartPage({super.key});
 
   // Map for image files same as shopping page
   final Map<String, String> _imageFiles = {
@@ -19,25 +15,22 @@ class _CartPageState extends State<CartPage> {
     'Biscuits': 'biscuits.png',
   };
 
-  void _increaseQty(String product) {
-    setState(() {
-      cart.addItem(product, 1);
-    });
-  }
+  @override
+  Widget build(BuildContext context) {
+    final cart = Provider.of<CartModel>(context);
+    final items = cart.items;
 
-  void _decreaseQty(String product) {
-    setState(() {
-      if (cart.items[product]! > 1) {
-        cart.items[product] = cart.items[product]! - 1;
+    void _increaseQty(String product) {
+      cart.addItem(product, 1);
+    }
+
+    void _decreaseQty(String product) {
+      if (items[product]! > 1) {
+        cart.addItem(product, -1); // subtract 1
       } else {
         cart.removeItem(product);
       }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final items = cart.items;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -64,7 +57,8 @@ class _CartPageState extends State<CartPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -78,7 +72,6 @@ class _CartPageState extends State<CartPage> {
                             fit: BoxFit.cover,
                           ),
                         ),
-
                         const SizedBox(width: 16),
 
                         // Product name and quantity controls
@@ -99,7 +92,9 @@ class _CartPageState extends State<CartPage> {
                                 children: [
                                   // Decrease button
                                   IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline, color: Colors.brown),
+                                    icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        color: Colors.brown),
                                     onPressed: () => _decreaseQty(product),
                                   ),
 
@@ -111,7 +106,8 @@ class _CartPageState extends State<CartPage> {
 
                                   // Increase button
                                   IconButton(
-                                    icon: const Icon(Icons.add_circle_outline, color: Colors.brown),
+                                    icon: const Icon(Icons.add_circle_outline,
+                                        color: Colors.brown),
                                     onPressed: () => _increaseQty(product),
                                   ),
                                 ],
@@ -120,13 +116,11 @@ class _CartPageState extends State<CartPage> {
                           ),
                         ),
 
-                        // Optional: Remove item button
+                        // Remove item button
                         IconButton(
                           icon: const Icon(Icons.delete_forever, color: Colors.red),
                           onPressed: () {
-                            setState(() {
-                              cart.removeItem(product);
-                            });
+                            cart.removeItem(product);
                           },
                         ),
                       ],
@@ -141,16 +135,10 @@ class _CartPageState extends State<CartPage> {
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    cart.clear();
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Thank you for your purchase!'),
-                      backgroundColor: Colors.green,
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CheckoutPage()),
                   );
-                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.brown,

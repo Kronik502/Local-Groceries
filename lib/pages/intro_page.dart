@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+// Custom color styles
 import '../styles/colors.dart';
-import 'shopping_page.dart';
+
+// AppRoutes constants (assumed to be in main.dart)
+import '../main.dart';
+
+import '../main_page.dart';  // Import MainPage here to navigate directly
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -10,9 +17,12 @@ class IntroPage extends StatefulWidget {
 }
 
 class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  bool _isLoggedIn = false;
+  bool _loadingUser = true;
 
   @override
   void initState() {
@@ -35,6 +45,15 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
     );
 
     _controller.forward();
+    _checkUser();
+  }
+
+  Future<void> _checkUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    setState(() {
+      _isLoggedIn = user != null;
+      _loadingUser = false;
+    });
   }
 
   @override
@@ -45,6 +64,12 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
+    if (_loadingUser) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -98,7 +123,7 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
                       Text(
                         'Get farm-fresh groceries delivered to your doorstep. '
                         'Support local farmers and enjoy seasonal produce at affordable prices. '
-                        'Tap below to start shopping!',
+                        'Tap below to start shopping${_isLoggedIn ? '!' : ' or sign up!'}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16,
@@ -108,13 +133,44 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
 
                       const SizedBox(height: 40),
 
-                      // Button
+                      // Sign Up Button (only if not logged in)
+                      if (!_isLoggedIn)
+                        ElevatedButton(
+                          key: const ValueKey('SignUpButton'),
+                          onPressed: () {
+                            Navigator.pushNamed(context, AppRoutes.signup);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary ?? Colors.green,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 40,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: const Text(
+                            'Sign Up',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+
+                      if (!_isLoggedIn) const SizedBox(height: 16),
+
+                      // Shop Now Button
                       ElevatedButton(
+                        key: const ValueKey('ShopNowButton'),
                         onPressed: () {
-                          Navigator.push(
+                          // Navigate to MainPage with Shop tab (index 1)
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ShoppingPage(),
+                              builder: (context) => MainPage(initialIndex: 1),
                             ),
                           );
                         },
@@ -129,7 +185,7 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
                           ),
                           elevation: 4,
                         ),
-                        child: const Text(
+                        child: Text(
                           'Shop Now',
                           style: TextStyle(
                             fontSize: 18,
@@ -140,7 +196,7 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
 
                       const SizedBox(height: 60),
 
-                      // Footer text
+                      // Footer
                       Text(
                         'Your health. Our mission.',
                         style: TextStyle(
