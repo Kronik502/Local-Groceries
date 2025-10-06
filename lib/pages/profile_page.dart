@@ -115,63 +115,65 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _saveProfile() async {
-    if (_currentUser == null) return;
+  if (_currentUser == null) return;
 
-    final fullName = _fullNameController.text.trim();
-    final surname = _surnameController.text.trim();
-    final cellNo = _cellNoController.text.trim();
-    
-    if (fullName.isEmpty) {
-      _showSnackBar('Full name cannot be empty', isError: true);
-      return;
-    }
-    
-    if (surname.isEmpty) {
-      _showSnackBar('Surname cannot be empty', isError: true);
-      return;
-    }
-    
-    if (cellNo.isEmpty) {
-      _showSnackBar('Cell number cannot be empty', isError: true);
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    try {
-      final whatsappNo = _sameAsCell ? cellNo : _whatsappNoController.text.trim();
-      
-      // Update Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(_currentUser!.uid)
-          .set({
-        'fullName': fullName,
-        'surname': surname,
-        'email': _emailController.text,
-        'cellNo': cellNo,
-        'whatsappNo': whatsappNo,
-        'sameAsCell': _sameAsCell,
-        'streetAddress1': _streetAddress1Controller.text.trim(),
-        'streetAddress2': _streetAddress2Controller.text.trim(),
-        'township': _townshipController.text.trim(),
-        'postalCode': _postalCodeController.text.trim(),
-        'profileImage': _profileImageBase64,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      // Update display name in Firebase Auth
-      await _currentUser!.updateDisplayName('$fullName $surname');
-
-      _showSnackBar('Profile updated successfully!');
-      
-    } catch (e) {
-      _showSnackBar('Error updating profile: ${e.toString()}', isError: true);
-    } finally {
-      setState(() => _isSaving = false);
-    }
+  final fullName = _fullNameController.text.trim();
+  final surname = _surnameController.text.trim();
+  final cellNo = _cellNoController.text.trim();
+  
+  if (fullName.isEmpty) {
+    _showSnackBar('Full name cannot be empty', isError: true);
+    return;
+  }
+  
+  if (surname.isEmpty) {
+    _showSnackBar('Surname cannot be empty', isError: true);
+    return;
+  }
+  
+  if (cellNo.isEmpty) {
+    _showSnackBar('Cell number cannot be empty', isError: true);
+    return;
   }
 
+  setState(() => _isSaving = true);
+
+  try {
+    final whatsappNo = _sameAsCell ? cellNo : _whatsappNoController.text.trim();
+    
+    // Update Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_currentUser!.uid)
+        .set({
+      'fullName': fullName,
+      'surname': surname,
+      'email': _emailController.text,
+      'cellNo': cellNo,
+      'whatsappNo': whatsappNo,
+      'sameAsCell': _sameAsCell,
+      'streetAddress1': _streetAddress1Controller.text.trim(),
+      'streetAddress2': _streetAddress2Controller.text.trim(),
+      'township': _townshipController.text.trim(),
+      'postalCode': _postalCodeController.text.trim(),
+      'profileImage': _profileImageBase64,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    // Update display name in Firebase Auth - FIXED LINE
+    await _currentUser!.updateProfile(displayName: '$fullName $surname');
+    
+    // Reload user to reflect changes
+    await _currentUser!.reload();
+
+    _showSnackBar('Profile updated successfully!');
+    
+  } catch (e) {
+    _showSnackBar('Error updating profile: ${e.toString()}', isError: true);
+  } finally {
+    setState(() => _isSaving = false);
+  }
+}
   Future<void> _logout() async {
     try {
       await FirebaseAuth.instance.signOut();
