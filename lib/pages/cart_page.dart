@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../styles/colors.dart'; // Assuming AppColors is in a separate file
 import 'cart_model.dart';
 import 'checkout_page.dart';
 
@@ -22,6 +23,7 @@ class CartPage extends StatelessWidget {
 
     void _increaseQty(String product) {
       cart.addItem(product, 1);
+      // saveCart is automatically called inside addItem()
     }
 
     void _decreaseQty(String product) {
@@ -30,18 +32,21 @@ class CartPage extends StatelessWidget {
       } else {
         cart.removeItem(product);
       }
+      // saveCart is automatically called inside addItem() or removeItem()
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Cart'),
-        backgroundColor: Colors.brown,
-      ),
+      backgroundColor: AppColors.background, // Soft slate background
       body: items.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'Your cart is empty',
-                style: TextStyle(fontSize: 18),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'Inter',
+                ),
               ),
             )
           : ListView(
@@ -51,14 +56,14 @@ class CartPage extends StatelessWidget {
                 final quantity = entry.value;
 
                 return Card(
-                  elevation: 3,
+                  elevation: 4, // Subtle shadow for depth
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16), // Softer corners
                   ),
+                  color: AppColors.cardBackground, // White card background
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    padding: const EdgeInsets.all(12),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -70,6 +75,16 @@ class CartPage extends StatelessWidget {
                             height: 80,
                             width: 80,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              height: 80,
+                              width: 80,
+                              color: AppColors.lightGray,
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: AppColors.gray,
+                                size: 40,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -81,33 +96,52 @@ class CartPage extends StatelessWidget {
                             children: [
                               Text(
                                 product,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.brown,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                  fontFamily: 'Inter',
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 8),
                               Row(
                                 children: [
                                   // Decrease button
                                   IconButton(
-                                    icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                        color: Colors.brown),
+                                    icon: Icon(
+                                      Icons.remove_circle_outline,
+                                      color: AppColors.secondary,
+                                      size: 28,
+                                    ),
                                     onPressed: () => _decreaseQty(product),
                                   ),
 
                                   // Quantity display
-                                  Text(
-                                    '$quantity',
-                                    style: const TextStyle(fontSize: 18),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.inputBackground,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '$quantity',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.textPrimary,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
                                   ),
 
                                   // Increase button
                                   IconButton(
-                                    icon: const Icon(Icons.add_circle_outline,
-                                        color: Colors.brown),
+                                    icon: Icon(
+                                      Icons.add_circle_outline,
+                                      color: AppColors.secondary,
+                                      size: 28,
+                                    ),
                                     onPressed: () => _increaseQty(product),
                                   ),
                                 ],
@@ -118,9 +152,14 @@ class CartPage extends StatelessWidget {
 
                         // Remove item button
                         IconButton(
-                          icon: const Icon(Icons.delete_forever, color: Colors.red),
+                          icon: Icon(
+                            Icons.delete_forever,
+                            color: AppColors.error,
+                            size: 28,
+                          ),
                           onPressed: () {
                             cart.removeItem(product);
+                            // saveCart is called inside removeItem()
                           },
                         ),
                       ],
@@ -141,16 +180,20 @@ class CartPage extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
+                  backgroundColor: AppColors.primary, // Vibrant indigo
+                  foregroundColor: AppColors.textOnPrimary, // White text
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 2, // Subtle shadow
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Inter',
+                  ),
                 ),
-                child: const Text(
-                  'Checkout',
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
+                child: const Text('Checkout'),
               ),
             ),
     );

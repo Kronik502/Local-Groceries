@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';  // <-- Import provider
+import 'package:provider/provider.dart';
 import '../styles/colors.dart';
 import 'cart_model.dart';
 import 'cart_page.dart';
@@ -41,7 +41,6 @@ class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMix
     _animateItems();
   }
 
-  // Animate items in with delay
   void _animateItems() async {
     for (var item in _quantities.keys) {
       await Future.delayed(const Duration(milliseconds: 200));
@@ -68,15 +67,23 @@ class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMix
   void _addToCart(String item) {
     final qty = _quantities[item]!;
     if (qty > 0) {
-      // Use Provider to get CartModel instance and add item
       final cart = Provider.of<CartModel>(context, listen: false);
       cart.addItem(item, qty);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$qty x $item added to cart!'),
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('$qty x $item added to cart!'),
+            ],
+          ),
           duration: const Duration(seconds: 2),
           backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: EdgeInsets.all(16),
         ),
       );
 
@@ -90,14 +97,8 @@ class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('🛒 Shop Groceries'),
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        // Optional: You can add a cart icon with badge here if you want
-      ),
       body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         itemCount: _items.length,
         itemBuilder: (context, index) {
           final item = _items[index];
@@ -126,95 +127,226 @@ class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMix
   }
 
   Widget _buildProductCard(String item) {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'lib/images/${_imageFiles[item]}',
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.08),
+            blurRadius: 20,
+            offset: Offset(0, 4),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product Image with gradient overlay
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                child: Image.asset(
+                  'lib/images/${_imageFiles[item]}',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-
-            // Product Title
-            Text(
-              item,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: 6),
-
-            // Product Description
-            Text(
-              _descriptions[item]!,
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Quantity + Add Button
-            Row(
-              children: [
-                Container(
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.inputBackground,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.primary),
+                    color: Colors.white.withOpacity(0.95),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: () => _decrease(item),
-                      ),
+                      Icon(Icons.star, color: AppColors.warning, size: 16),
+                      SizedBox(width: 4),
                       Text(
-                        '${_quantities[item]}',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () => _increase(item),
+                        '4.8',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _addToCart(item),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+              ),
+            ],
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product Title
+                Text(
+                  item,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Product Description
+                Text(
+                  _descriptions[item]!,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Quantity + Add Button
+                Row(
+                  children: [
+                    // Quantity Selector
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primaryLight.withOpacity(0.3),
+                            AppColors.primaryLight.withOpacity(0.15),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.2),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _decrease(item),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: EdgeInsets.all(12),
+                                child: Icon(
+                                  Icons.remove_rounded,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              '${_quantities[item]}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _increase(item),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: EdgeInsets.all(12),
+                                child: Icon(
+                                  Icons.add_rounded,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: const Text(
-                      'Add to Cart',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    const SizedBox(width: 12),
+
+                    // Add to Cart Button
+                    Expanded(
+                      child: Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: AppColors.secondaryGradient,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.secondary.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _addToCart(item),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.shopping_cart_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Add to Cart',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

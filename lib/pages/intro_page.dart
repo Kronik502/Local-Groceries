@@ -166,13 +166,13 @@ class _IntroPageState extends State<IntroPage> with SingleTickerProviderStateMix
                       ElevatedButton(
                         key: const ValueKey('ShopNowButton'),
                         onPressed: () {
-                          // Navigate to MainPage with Shop tab (index 1)
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MainPage(initialIndex: 1),
-                            ),
-                          );
+                       Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(
+    builder: (context) => MainPage(user: FirebaseAuth.instance.currentUser),
+  ),
+);
+
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,

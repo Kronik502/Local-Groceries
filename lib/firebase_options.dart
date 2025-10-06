@@ -48,6 +48,7 @@ class DefaultFirebaseOptions {
     authDomain: 'localgroc-8aba2.firebaseapp.com',
     storageBucket: 'localgroc-8aba2.firebasestorage.app',
     measurementId: 'G-ETM34MXRP8',
+    databaseURL: 'https://localgroc-8aba2-default-rtdb.firebaseio.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -56,6 +57,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '769143430529',
     projectId: 'localgroc-8aba2',
     storageBucket: 'localgroc-8aba2.firebasestorage.app',
+    databaseURL: 'https://localgroc-8aba2-default-rtdb.firebaseio.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -65,6 +67,7 @@ class DefaultFirebaseOptions {
     projectId: 'localgroc-8aba2',
     storageBucket: 'localgroc-8aba2.firebasestorage.app',
     iosBundleId: 'com.example.localgroceries',
+    databaseURL: 'https://localgroc-8aba2-default-rtdb.firebaseio.com',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -74,6 +77,7 @@ class DefaultFirebaseOptions {
     projectId: 'localgroc-8aba2',
     storageBucket: 'localgroc-8aba2.firebasestorage.app',
     iosBundleId: 'com.example.localgroceries',
+    databaseURL: 'https://localgroc-8aba2-default-rtdb.firebaseio.com',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
@@ -84,5 +88,6 @@ class DefaultFirebaseOptions {
     authDomain: 'localgroc-8aba2.firebaseapp.com',
     storageBucket: 'localgroc-8aba2.firebasestorage.app',
     measurementId: 'G-C38YXH4J6H',
+    databaseURL: 'https://localgroc-8aba2-default-rtdb.firebaseio.com',
   );
 }
